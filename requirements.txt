@@ -1,0 +1,3 @@
+# MkDocs site pins (also listed in pyproject.toml [dev]).
+mkdocs==1.6.1
+mkdocs-material==9.7.7

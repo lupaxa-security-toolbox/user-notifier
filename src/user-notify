@@ -1,0 +1,107 @@
+#!/usr/bin/env python3
+"""Fan a classified PAM event out to every executable hook."""
+
+from __future__ import annotations
+
+import configparser
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+DEFAULT_CONFIG = "/etc/user-notifier/notifier.conf"
+DEFAULT_HOOKS_DIR = "/etc/user-notifier/hooks.d"
+DEFAULT_CHANNEL = "audit"
+DEFAULT_USERNAME = "AuditBot"
+
+
+def notify_color(state: str) -> str:
+    return "danger" if state == "open" else "good"
+
+
+def load_config(path: str | None) -> dict:
+    resolved = path or os.environ.get("USER_NOTIFIER_CONFIG") or DEFAULT_CONFIG
+    parser = configparser.ConfigParser()
+    parser.read(resolved)
+    return {
+        "hooks_dir": parser.get("notify", "hooks_dir", fallback=DEFAULT_HOOKS_DIR),
+        "webhook_url": parser.get("slack", "webhook_url", fallback=""),
+        "channel": parser.get("slack", "channel", fallback=DEFAULT_CHANNEL),
+        "username": parser.get("slack", "username", fallback=DEFAULT_USERNAME),
+    }
+
+
+def hook_environment(event_type, host, details, state, config) -> dict:
+    env = os.environ.copy()
+    env["NOTIFY_TYPE"] = event_type
+    env["NOTIFY_HOST"] = host
+    env["NOTIFY_DETAILS"] = details
+    env["NOTIFY_STATE"] = state
+    env["NOTIFY_COLOR"] = notify_color(state)
+    env["SLACK_WEBHOOK_URL"] = config.get("webhook_url", "")
+    env["SLACK_CHANNEL"] = config.get("channel", DEFAULT_CHANNEL)
+    env["SLACK_USERNAME"] = config.get("username", DEFAULT_USERNAME)
+    env["NOTIFY_HOOKS_DIR"] = config.get("hooks_dir", DEFAULT_HOOKS_DIR)
+    return env
+
+
+def _is_hook(path: Path) -> bool:
+    name = path.name
+    if name.startswith(".") or name.startswith("README") or name.endswith(".example"):
+        return False
+    return path.is_file() and os.access(path, os.X_OK)
+
+
+def list_hooks(hooks_dir) -> list:
+    directory = Path(hooks_dir)
+    if not directory.is_dir():
+        return []
+    return sorted((p for p in directory.iterdir() if _is_hook(p)), key=lambda p: p.name)
+
+
+def _log(message: str) -> None:
+    try:
+        subprocess.run(
+            ["logger", "-t", "user-notifier", "--", message],
+            check=False,
+            capture_output=True,
+        )
+    except OSError:
+        pass  # logger(1) is optional; never fail a PAM session
+
+
+def run_hooks(hooks, env, argv) -> None:
+    for hook in hooks:
+        try:
+            result = subprocess.run(
+                [str(hook), *argv],
+                env=env,
+                capture_output=True,
+                timeout=30,
+                check=False,
+            )
+            if result.returncode != 0:
+                err = result.stderr.decode("utf-8", errors="replace").strip()
+                _log(f"hook {hook.name} exited {result.returncode}: {err}")
+        except Exception as exc:  # noqa: BLE001 — never fail PAM
+            _log(f"hook {getattr(hook, 'name', hook)} failed: {exc}")
+
+
+def main(argv=None) -> int:
+    args = list(sys.argv[1:] if argv is None else argv)
+    if len(args) < 4:
+        if os.environ.get("PAM_TYPE"):
+            return 0
+        return 1
+    event_type, host, details, state = args[0], args[1], args[2], args[3]
+    try:
+        config = load_config(None)
+        env = hook_environment(event_type, host, details, state, config)
+        run_hooks(list_hooks(config["hooks_dir"]), env, [event_type, host, details, state])
+    except Exception:  # noqa: BLE001 — never fail PAM after classified event
+        _log("user-notify: dispatch failed")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

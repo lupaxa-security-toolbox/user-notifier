@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+"""Slack incoming-webhook hook for user-notify."""
+
+from __future__ import annotations
+
+import json
+import os
+import subprocess
+import sys
+import urllib.error
+import urllib.request
+
+
+def _log(message: str) -> None:
+    try:
+        subprocess.run(
+            ["logger", "-t", "user-notifier", "--", message],
+            check=False,
+            capture_output=True,
+        )
+    except OSError:
+        pass  # logger(1) is optional; never fail a PAM session
+
+
+def build_payload(event_type, host, details, color, channel, username) -> dict:
+    return {
+        "channel": channel,
+        "username": username,
+        "attachments": [
+            {
+                "fallback": details,
+                "color": color,
+                "fields": [
+                    {"title": "Type", "value": event_type, "short": True},
+                    {"title": "Hostname", "value": host, "short": True},
+                    {"title": "Details", "value": details, "short": False},
+                ],
+            }
+        ],
+    }
+
+
+def post_webhook(url: str, payload: dict) -> None:
+    data = json.dumps(payload).encode("utf-8")
+    request = urllib.request.Request(
+        url,
+        data=data,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(request, timeout=15) as response:
+        response.read()
+
+
+def main() -> int:
+    url = os.environ.get("SLACK_WEBHOOK_URL", "")
+    if not url:
+        _log("50-slack: no SLACK_WEBHOOK_URL; skipping")
+        return 0
+    args = sys.argv[1:]
+    event_type = os.environ.get("NOTIFY_TYPE") or (args[0] if len(args) > 0 else "")
+    host = os.environ.get("NOTIFY_HOST") or (args[1] if len(args) > 1 else "")
+    details = os.environ.get("NOTIFY_DETAILS") or (args[2] if len(args) > 2 else "")
+    state = os.environ.get("NOTIFY_STATE") or (args[3] if len(args) > 3 else "")
+    color = os.environ.get("NOTIFY_COLOR") or (
+        "danger" if state == "open" else "good"
+    )
+    channel = os.environ.get("SLACK_CHANNEL") or "audit"
+    username = os.environ.get("SLACK_USERNAME") or "AuditBot"
+    payload = build_payload(event_type, host, details, color, channel, username)
+    try:
+        post_webhook(url, payload)
+    except (OSError, urllib.error.URLError):
+        _log("50-slack: webhook request failed")
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

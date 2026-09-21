@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+_lib=""
+if [[ -n "${USER_NOTIFIER_LIB:-}" && -f "${USER_NOTIFIER_LIB}" ]]; then
+    _lib="${USER_NOTIFIER_LIB}"
+elif [[ -f /usr/lib/user-notifier/pam-common.sh ]]; then
+    _lib=/usr/lib/user-notifier/pam-common.sh
+else
+    _lib="$(cd "$(dirname "$0")" && pwd)/pam-common.sh"
+fi
+if [[ ! -f "${_lib}" ]]; then
+    if command -v logger >/dev/null 2>&1; then
+        logger -t user-notifier -- "missing pam-common library: ${_lib}"
+    fi
+    exit 0
+fi
+# shellcheck disable=SC1090
+source "${_lib}"
+
+classify_connection
+dispatch_notify
+exit 0

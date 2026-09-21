@@ -1,0 +1,7 @@
+[notify]
+hooks_dir = /etc/user-notifier/hooks.d
+
+[slack]
+webhook_url =
+channel = audit
+username = AuditBot
