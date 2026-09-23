@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "lupaxa-user-notifier"
-version = "0.1.0"
+version = "0.1.1"
 description = "PAM hooks that notify on login and privilege escalation."
 readme = "README.md"
 license = { file = "LICENCE" }
