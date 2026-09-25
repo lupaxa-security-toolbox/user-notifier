@@ -4,17 +4,11 @@
   </a>
 </p>
 
-<h1 align="center">user-notifier</h1>
+<h1 align="center">User Notifier</h1>
 
 PAM hooks that tell you when someone logs in or escalates privileges.
 A small dispatcher then fans each event out to drop-in hooks. Slack is
 the first hook.
-
-<p align="center">
-  <a href="https://user-notifier.thelupaxaproject.org/">Documentation</a>
-  ·
-  <a href="https://github.com/lupaxa-security-toolbox/user-notifier">GitHub</a>
-</p>
 
 ## Install
 
@@ -55,7 +49,7 @@ cannot fail the session).
 (see that directory's README). `50-slack` is installed by default.
 Add another script there to also mail, syslog, or call something else.
 
-## How it works
+## How it Works
 
 -   `/usr/sbin/connection` — local `login` and `sshd` sessions
 -   `/usr/sbin/escalation` — `su` and `sudo`
@@ -74,6 +68,17 @@ Open sessions are red in Slack; close sessions are green.
 make init
 make install-dev
 make check
+```
+
+## Documentation
+
+The published guide is at
+<https://user-notifier.thelupaxaproject.org/>.
+
+Site Markdown lives in `mkdocs/`.
+
+```bash
+python -m pip install -r requirements.txt
 make mkdocs-serve
 ```
 

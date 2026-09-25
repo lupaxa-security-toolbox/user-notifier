@@ -5,7 +5,7 @@ The hook contract also ships on the box as
 that file as the interface. This page is the same contract, plus
 paths and config keys.
 
-## Hook naming
+## Hook Naming
 
 Drop an executable in `hooks_dir`. `user-notify` runs every hook in
 name order and continues if one fails.
@@ -52,7 +52,7 @@ username = AuditBot
 The installer writes a live `notifier.conf` at mode `0640` and will
 not overwrite an existing live file.
 
-## Install paths
+## Install Paths
 
 | Path                                         | What                                             |
 | :------------------------------------------- | :----------------------------------------------- |
@@ -66,7 +66,7 @@ not overwrite an existing live file.
 | `/etc/user-notifier/hooks.d/50-slack`        | Slack webhook                                    |
 | `/etc/user-notifier/hooks.d/README`          | hook contract                                    |
 
-## Dispatcher exit codes
+## Dispatcher Exit Codes
 
 | Code | When                                                                  |
 | :--- | :-------------------------------------------------------------------- |

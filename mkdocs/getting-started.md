@@ -1,4 +1,4 @@
-# Getting started
+# Getting Started
 
 ## Requirements
 
@@ -41,7 +41,7 @@ those lines.
 Notify is synchronous; a slow webhook can delay login or sudo (it still
 cannot fail the session).
 
-## First event
+## First Event
 
 After PAM is wired, open an SSH session or run `sudo -s`. You should
 see a Slack message with Type, Hostname, and Details. Closing the
@@ -54,7 +54,7 @@ ls -l /usr/sbin/connection /usr/sbin/escalation /usr/sbin/user-notify
 ls -l /etc/user-notifier/hooks.d /etc/user-notifier/notifier.conf
 ```
 
-## Development checkout
+## Development Checkout
 
 On a workstation you can install makefile-skills and run the suite
 without becoming root:

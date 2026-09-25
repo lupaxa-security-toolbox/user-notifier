@@ -14,7 +14,7 @@ logger -t user-notifier -- "${NOTIFY_TYPE} ${NOTIFY_STATE} ${NOTIFY_HOST} ${NOTI
 
 Save as `40-syslog`.
 
-## Mail root
+## Mail Root
 
 ```bash
 #!/bin/sh
@@ -24,7 +24,7 @@ printf '%s\n' "${NOTIFY_DETAILS}" \
 
 Save as `60-mail`. Needs a working local `mail` command.
 
-## Sudo only
+## Sudo Only
 
 Skip everything except privilege escalation:
 
@@ -39,7 +39,7 @@ logger -t user-notifier -- "${NOTIFY_TYPE} ${NOTIFY_STATE} ${NOTIFY_DETAILS}"
 
 Save as `30-sudo-only`.
 
-## Second webhook
+## Second Webhook
 
 `50-slack` reads `SLACK_WEBHOOK_URL`. For another channel, hard-code a
 second URL in its own hook (keep the secret in a `0640` file, not in
@@ -70,7 +70,7 @@ urllib.request.urlopen(req, timeout=15)
 
 Save as `55-ops-slack`.
 
-## Dry-run one hook
+## Dry-Run One Hook
 
 ```bash
 NOTIFY_TYPE=ssh \

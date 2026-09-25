@@ -1,6 +1,6 @@
 # Usage
 
-## What the wrappers do
+## What the Wrappers Do
 
 `/usr/sbin/connection` handles local `login` and `sshd` sessions.
 `/usr/sbin/escalation` handles `su` and `sudo`. Both source
@@ -11,7 +11,7 @@ and state (`open` or `close`).
 Same-user `sudo` to root is skipped (no notify). An empty `PAM_RUSER`
 is treated as actor `unknown`.
 
-## What `user-notify` does
+## What `user-notify` Does
 
 `user-notify` reads `/etc/user-notifier/notifier.conf` (or
 `USER_NOTIFIER_CONFIG`), exports the hook contract, and runs every
@@ -22,7 +22,7 @@ config or hook error.
 Do not write to the login TTY from a hook. Use
 `logger -t user-notifier` if you need logs.
 
-## Dry-run without PAM
+## Dry-Run Without PAM
 
 Point the wrappers at the tree in this repo and a fake notifier:
 
@@ -48,14 +48,14 @@ USER_NOTIFIER_CONFIG="$PWD/config/notifier.conf.example" \
 
 With an empty webhook URL, `50-slack` is a no-op.
 
-## Environment overrides
+## Environment Overrides
 
-| Variable              | Role                                              |
-| :-------------------- | :------------------------------------------------ |
-| `USER_NOTIFY`         | Path to `user-notify` (wrappers look here first)  |
-| `USER_NOTIFIER_LIB`   | Path to `pam-common.sh`                           |
-| `USER_NOTIFIER_CONFIG`| Path to `notifier.conf`                           |
-| `NOTIFY_TEST_HOSTNAME`| Hostname used in the classified message           |
+| Variable               | Role                                              |
+| :--------------------- | :------------------------------------------------ |
+| `USER_NOTIFY`          | Path to `user-notify` (wrappers look here first)  |
+| `USER_NOTIFIER_LIB`    | Path to `pam-common.sh`                           |
+| `USER_NOTIFIER_CONFIG` | Path to `notifier.conf`                           |
+| `NOTIFY_TEST_HOSTNAME` | Hostname used in the classified message           |
 
 On a live install, leave these unset so `/usr/sbin` and
 `/etc/user-notifier` win.
